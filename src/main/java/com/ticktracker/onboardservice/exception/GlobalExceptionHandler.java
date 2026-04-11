@@ -21,4 +21,17 @@ public class GlobalExceptionHandler {
     {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ex.getMessage(), HttpStatus.CONFLICT));
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> userNotFoundException(UserNotFoundException ex)
+    {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(ex.getMessage(), HttpStatus.NOT_FOUND));
+    }
+
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ExceptionResponse> Exception(InvalidRefreshTokenException ex)
+    {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ExceptionResponse(ex.getMessage(), HttpStatus.FORBIDDEN));
+    }
 }

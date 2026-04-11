@@ -1,0 +1,14 @@
+package com.ticktracker.onboardservice.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/demo")
+public class DemoController {
+
+    public String demoEndpoint()
+    {
+        return "Hi , This is a demo endpoint to test security features";
+    }
+}

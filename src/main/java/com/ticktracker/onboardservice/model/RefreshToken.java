@@ -24,4 +24,11 @@ public class RefreshToken {
     @Column(nullable = false)
     private Date expiry;
 
+    public RefreshToken(String token , User user , Date expiry)
+    {
+        this.token = token;
+        this.user = user;
+        this.expiry = expiry;
+    }
+
 }

@@ -1,14 +1,20 @@
 package com.ticktracker.onboardservice.service;
 
+import com.ticktracker.onboardservice.dto.LoginRequestDTO;
+import com.ticktracker.onboardservice.dto.LoginResponseDTO;
 import com.ticktracker.onboardservice.dto.UserRegistrationDTO;
 import com.ticktracker.onboardservice.enums.Role;
 import com.ticktracker.onboardservice.enums.Status;
 import com.ticktracker.onboardservice.exception.AdminAlreadyExistsException;
 import com.ticktracker.onboardservice.exception.UserAlreadyExistsException;
+import com.ticktracker.onboardservice.jwtutil.JwtService;
+import com.ticktracker.onboardservice.model.RefreshToken;
 import com.ticktracker.onboardservice.model.User;
 import com.ticktracker.onboardservice.repo.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +31,15 @@ public class AuthService {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
+    @Autowired
+    private JwtService jwtService;
 
     public User registerUser(UserRegistrationDTO dto)
     {
@@ -49,7 +64,6 @@ public class AuthService {
 
         //If it's the first user of the platform , Assign ADMIN role and set Status as ACTIVE
         long count = userRepository.count();
-        System.out.println(count+"wertyuio");
        if(count>0)
        {
            if(dto.getRole().equalsIgnoreCase("ADMIN"))
@@ -60,5 +74,37 @@ public class AuthService {
            existingUser.setStatus(Status.PENDING);
        }
        return userRepository.save(existingUser);
+    }
+
+
+    public LoginResponseDTO login(LoginRequestDTO dto)
+    {
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(dto.getEmail() , dto.getPassword());
+
+         if(authenticationManager.authenticate(token).isAuthenticated())
+         {
+             User existingUser = userRepository.findByEmail(dto.getEmail());
+             String accessToken = jwtService.generateToken(existingUser);
+             String refreshToken = refreshTokenService.generateRefreshToken(existingUser).getToken();
+
+             return new LoginResponseDTO(accessToken,refreshToken);
+         }
+
+        // Throw Exception automatically if fails so no need to throw
+        return null;
+
+    }
+
+    public String getAccessToken(String refreshToken)
+    {
+        RefreshToken token = refreshTokenService.getrefreshTokenByToken(refreshToken);
+        return jwtService.generateToken(token.getUser());
+
+    }
+
+    public void logoutUser(Long id)
+    {
+        refreshTokenService.deleteRefreshTokenByUserId(id);
+        return;
     }
 }
