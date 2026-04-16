@@ -2,6 +2,9 @@ package com.ticktracker.onboardservice.jwtutil;
 
 import com.ticktracker.onboardservice.model.User;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
@@ -12,16 +15,13 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static SecretKey key;
-    public JwtService()
+    private final SecretKey key;
+    public JwtService(@Value("${jwt.secret-key}") String secret)
     {
-        try {
-            this.key = KeyGenerator.getInstance("HmacSHA256").generateKey();
-        } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-        }
+        this.key = Keys.hmacShaKeyFor(
+                Decoders.BASE64.decode(secret)
+        );
     }
-
     public String generateToken(User user) {
         return Jwts.builder()
                 .subject(user.getEmail())
