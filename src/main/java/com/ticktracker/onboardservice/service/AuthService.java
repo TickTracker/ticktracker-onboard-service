@@ -7,6 +7,7 @@ import com.ticktracker.onboardservice.enums.Role;
 import com.ticktracker.onboardservice.enums.Status;
 import com.ticktracker.onboardservice.exception.AdminAlreadyExistsException;
 import com.ticktracker.onboardservice.exception.UserAlreadyExistsException;
+import com.ticktracker.onboardservice.exception.WaitingApprovalException;
 import com.ticktracker.onboardservice.jwtutil.JwtService;
 import com.ticktracker.onboardservice.model.RefreshToken;
 import com.ticktracker.onboardservice.model.User;
@@ -83,7 +84,14 @@ public class AuthService {
 
          if(authenticationManager.authenticate(token).isAuthenticated())
          {
+
+             //TODO : Block login for the users with status pending
+
              User existingUser = userRepository.findByEmail(dto.getEmail());
+             if(existingUser.getStatus().equals(Status.PENDING))
+             {
+                 throw new WaitingApprovalException("Your Onboarding is Pending From Admin");
+             }
              String accessToken = jwtService.generateToken(existingUser);
              String refreshToken = refreshTokenService.generateRefreshToken(existingUser).getToken();
 

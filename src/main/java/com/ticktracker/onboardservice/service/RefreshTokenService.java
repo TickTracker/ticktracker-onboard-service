@@ -1,6 +1,7 @@
 package com.ticktracker.onboardservice.service;
 
 import com.ticktracker.onboardservice.exception.InvalidRefreshTokenException;
+import com.ticktracker.onboardservice.exception.RefreshTokenExpiredException;
 import com.ticktracker.onboardservice.model.RefreshToken;
 import com.ticktracker.onboardservice.model.User;
 import com.ticktracker.onboardservice.repo.RefreshTokenRepo;
@@ -37,10 +38,16 @@ public class RefreshTokenService {
     {
        RefreshToken existingToken =  refreshTokenRepo.findByToken(token);
 
-       if(existingToken==null) // Means User Logfed Out , Login again .
+       if(existingToken==null) // Means User Logged Out , Login again .
        {
            throw new InvalidRefreshTokenException("User Logged Out , Please login again");
        }
+
+       //TODO also check if refresh token expired or not , if expired throw refresh token expired login again
+        if(new Date().after(existingToken.getExpiry()))
+        {
+            throw new RefreshTokenExpiredException("RefreshToken expired. Please log in ");
+        }
 
        return existingToken;
     }

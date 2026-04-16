@@ -34,4 +34,16 @@ public class GlobalExceptionHandler {
     {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ExceptionResponse(ex.getMessage(), HttpStatus.FORBIDDEN));
     }
+
+    @ExceptionHandler(RefreshTokenExpiredException.class)
+    public ResponseEntity<ExceptionResponse> Exception(RefreshTokenExpiredException ex)
+    {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ExceptionResponse(ex.getMessage(), HttpStatus.FORBIDDEN));
+    }
+
+    @ExceptionHandler(WaitingApprovalException.class)
+    public ResponseEntity<ExceptionResponse> Exception(WaitingApprovalException ex)
+    {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ExceptionResponse(ex.getMessage(), HttpStatus.FORBIDDEN));
+    }
 }
