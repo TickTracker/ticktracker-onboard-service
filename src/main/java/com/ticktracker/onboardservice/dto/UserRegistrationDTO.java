@@ -20,6 +20,5 @@ public class UserRegistrationDTO {
     private String email;
     @NotEmpty(message = "Password Cannot be Empty")
     private String password;
-    private String role;
 
 }

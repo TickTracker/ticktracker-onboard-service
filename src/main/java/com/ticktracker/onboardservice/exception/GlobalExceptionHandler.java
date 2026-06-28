@@ -46,4 +46,16 @@ public class GlobalExceptionHandler {
     {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ExceptionResponse(ex.getMessage(), HttpStatus.FORBIDDEN));
     }
+
+    @ExceptionHandler(MaintainanceModeException.class)
+    public ResponseEntity<ExceptionResponse> Exception(MaintainanceModeException ex)
+    {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ExceptionResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE));
+    }
+
+    @ExceptionHandler(RegistrationNotEnabledException.class)
+    public ResponseEntity<ExceptionResponse> Exception(RegistrationNotEnabledException ex)
+    {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ExceptionResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE));
+    }
 }

@@ -5,10 +5,9 @@ import com.ticktracker.onboardservice.dto.LoginResponseDTO;
 import com.ticktracker.onboardservice.dto.UserRegistrationDTO;
 import com.ticktracker.onboardservice.enums.Role;
 import com.ticktracker.onboardservice.enums.Status;
-import com.ticktracker.onboardservice.exception.AdminAlreadyExistsException;
-import com.ticktracker.onboardservice.exception.UserAlreadyExistsException;
-import com.ticktracker.onboardservice.exception.WaitingApprovalException;
+import com.ticktracker.onboardservice.exception.*;
 import com.ticktracker.onboardservice.jwtutil.JwtService;
+import com.ticktracker.onboardservice.model.PlatformSettings;
 import com.ticktracker.onboardservice.model.RefreshToken;
 import com.ticktracker.onboardservice.model.User;
 import com.ticktracker.onboardservice.repo.UserRepository;
@@ -42,8 +41,22 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private PlatformSettingsService platformSettingsService;
+
     public User registerUser(UserRegistrationDTO dto)
     {
+        PlatformSettings platformSettings = platformSettingsService.getPlatformSettings();
+        if(platformSettings.isMaintainanceMode())
+        {
+            throw new MaintainanceModeException("Site is in maintainance mode ! Please try again letter");
+        }
+
+        if(!platformSettings.isRegistrationEnabled())
+        {
+            throw new RegistrationNotEnabledException("Currently Registration Is Not Enabled , You Cant Register Now!");
+
+        }
        User existingUser =  userRepository.findByEmail(dto.getEmail());
        if(existingUser != null)
        {
@@ -54,8 +67,15 @@ public class AuthService {
         existingUser = modelMapper.map(dto,User.class);
         existingUser.setCreatedAt(new Date());
         existingUser.setPassword(passwordEncoder.encode(dto.getPassword()));
-        existingUser.setStatus(Status.ACTIVE);
 
+        //If Approval Required is False , means no approval needed currently ...
+        if(platformSettings.isApprovalRequired())
+        {
+            existingUser.setStatus(Status.PENDING);
+        }
+        else {
+            existingUser.setStatus(Status.ACTIVE);
+        }
        //TODO replce with userRepository.exists()   <S extends T> boolean exists(Example<S> example);
         // TODO Checks whether the data store contains elements that match the given Example.
         // TODO Params:
@@ -65,21 +85,26 @@ public class AuthService {
 
         //If it's the first user of the platform , Assign ADMIN role and set Status as ACTIVE
         long count = userRepository.count();
-       if(count>0)
-       {
-           if(dto.getRole().equalsIgnoreCase("ADMIN"))
-           {
-               throw new AdminAlreadyExistsException("Sorry You Cant be an Admin");
-           }
-           //Not The first User
-           existingUser.setStatus(Status.PENDING);
-       }
+        if(count==0)
+        {
+            existingUser.setRole(Role.ADMIN);
+            existingUser.setStatus(Status.ACTIVE);
+        }
+        else {
+            existingUser.setRole(Role.USER);
+        }
        return userRepository.save(existingUser);
     }
 
 
     public LoginResponseDTO login(LoginRequestDTO dto)
     {
+        PlatformSettings platformSettings = platformSettingsService.getPlatformSettings();
+        if(platformSettings.isMaintainanceMode())
+        {
+            throw new MaintainanceModeException("Site is in maintainance mode ! Please try again letter");
+        }
+
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(dto.getEmail() , dto.getPassword());
 
          if(authenticationManager.authenticate(token).isAuthenticated())

@@ -3,12 +3,10 @@ package com.ticktracker.onboardservice.controller;
 import com.ticktracker.onboardservice.dto.LoginRequestDTO;
 import com.ticktracker.onboardservice.dto.LoginResponseDTO;
 import com.ticktracker.onboardservice.dto.UserRegistrationDTO;
-import com.ticktracker.onboardservice.model.RefreshToken;
 import com.ticktracker.onboardservice.model.User;
 import com.ticktracker.onboardservice.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
