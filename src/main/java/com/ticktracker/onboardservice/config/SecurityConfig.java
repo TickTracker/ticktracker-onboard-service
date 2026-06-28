@@ -43,7 +43,7 @@ public class SecurityConfig {
                         req -> req
                                 .requestMatchers("/auth/**").permitAll()
                                 //TODO Implement Role Based Access
-                                .requestMatchers("/demo/**").hasRole("ADMIN")
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .anyRequest().authenticated())
 
 
